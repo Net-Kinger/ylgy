@@ -17,8 +17,8 @@ func init() {
 	tr := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		DialContext: (&net.Dialer{
-			Timeout:   10 * time.Second,
-			KeepAlive: 30 * time.Second,
+			Timeout:   100 * time.Second,
+			KeepAlive: 300 * time.Second,
 		}).DialContext,
 		DialTLSContext:         nil,
 		TLSClientConfig:        nil,
@@ -98,17 +98,17 @@ func setToken(gcontext *gin.Context) {
 			"Referer":         {`https://servicewechat.com/wx141bfb9b73c970a9/17/page-frame.html`},
 			"User-Agent":      {`Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/600.1.00 (KHTML, like Gecko) Mobile/1888888 MicroMessenger/8.0.30(0x00111100) NetType/WIFI Language/zh_CN`},
 		}
-		timeout, cancelFunc := context.WithTimeout(rootContext, 100*time.Second)
+		timeout, cancelFunc := context.WithTimeout(rootContext, 100*time.Second)//单服务端请求最大占用时间
 		for i := 0; i < atoi; i++ {
 			select {
 			case <-timeout.Done():
 				gcontext.String(200, "%s", "105Bug 通道关闭")
 				return
-			case <-time.NewTicker(1000 * time.Millisecond).C:
+			case <-time.NewTicker(1000 * time.Millisecond).C://发送请求速率
 				go func() {
 					_, err := v.Do(req)
 					if err != nil {
-						cancelFunc()
+						cancelFunc()//关闭通道
 					}
 				}()
 			}
